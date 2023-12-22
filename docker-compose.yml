@@ -1,0 +1,23 @@
+version: "3.6"
+services:
+  ticket_postgres:
+    image: postgres:14.8
+    container_name: ticket_postgres_container
+    ports:
+      - "5432:5432"
+    env_file:
+      - .env
+    environment:
+      POSTGRES_DB: tiket_postgres#${DB_NAME}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    restart: unless-stopped
+    volumes:
+      - /opt/data:/var/lib/postgresql/data
+    networks:
+      - ticketnet
+
+networks:
+  ticketnet:
+    driver: bridge
+    name: ticketnet
