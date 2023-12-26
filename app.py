@@ -7,8 +7,8 @@ from flask import make_response
 from flask_bcrypt import Bcrypt
 from config import jwt_secret_key
 from migrations.alembic_config import DB_HOST, DB_NAME, DB_PASSWORD, DB_USER
+from models import User, bcrypt, Base
 import secrets
-import uuid
 
 app = Flask(__name__)
 app.config['JWT_SECRET_KEY'] = jwt_secret_key
@@ -16,17 +16,9 @@ app.config['JWT_ACCESS_TOKEN_EXPIRES'] = timedelta(hours=24)
 app.config['SQLALCHEMY_DATABASE_URI'] = "postgresql://" + (DB_USER or "") + ":" + (DB_PASSWORD or "") + "@" + (DB_HOST or "") + "/" + (DB_NAME or "")
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 jwt = JWTManager(app)
-Base = SQLAlchemy(app)
-bcrypt = Bcrypt(app)
 
-
-class User(Base.Model):
-	id = Base.Column(Base.String(36), primary_key=True, default=str(uuid.uuid4()))
-	username = Base.Column(Base.String(80), unique=True, nullable=False)
-	password = Base.Column(Base.String(120), nullable=False)
-	salt = Base.Column(Base.String(29), nullable=False)
-	def __repr__(self):
-		return f'{self.username}'
+Base.init_app(app)
+bcrypt.init_app(app)
 
 @app.route('/registration', methods=['POST'])
 def registration():
@@ -83,5 +75,6 @@ def ticket_search():
 		"get_calendar": data.get('get_calendar')
 	}
 	return get_ticket(params)
+
 if __name__ == '__main__':
 	app.run(debug=True)
